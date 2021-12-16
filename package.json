@@ -1,7 +1,7 @@
 {
-  "name": "mysql-migrations",
-  "version": "1.0.7",
-  "description": "A tool to use with mysql package to maintain migrations",
+  "name": "mysql-migrations-esm",
+  "version": "1.0.8",
+  "description": "A tool to use with mysql package to maintain migrations, compatible with ESM",
   "main": "index.js",
   "scripts": {
     "test": "node node_modules/.bin/mocha test/*"

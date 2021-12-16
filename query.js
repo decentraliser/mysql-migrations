@@ -35,25 +35,28 @@ function execute_query(conn, path, final_file_paths, type, cb, run) {
     var file_name = final_file_paths.shift()['file_path'];
     var current_file_path = path + "/" + file_name;
     
-    var queries = require(current_file_path);
-    console.info(colors.green("Run: " + run + " Type: " + type.toUpperCase() + ": " +queries[type]));
+    import(current_file_path).then((queryModule) => {
+      const queries = queryModule.default;
 
-    var timestamp_val = file_name.split("_", 1)[0];
-    if (typeof(queries[type]) == 'string') {
-      run_query(conn, queries[type], function (res) {
-        updateRecords(conn, type, table, timestamp_val, function () {
-          execute_query(conn, path, final_file_paths, type, cb, run);
-        });
-      }, run);
-    } else if (typeof(queries[type]) == 'function') {
-      console.info(`${type.toUpperCase()} Function: "${ queries[type].toString() }"`);
+      console.info(colors.green("Run: " + run + " Type: " + type.toUpperCase() + ": " +queries[type]));
 
-      queries[type](conn, function() {
-        updateRecords(conn, type, table, timestamp_val, function () {
-          execute_query(conn, path, final_file_paths, type, cb);
+      var timestamp_val = file_name.split("_", 1)[0];
+      if (typeof(queries[type]) == 'string') {
+        run_query(conn, queries[type], function (res) {
+          updateRecords(conn, type, table, timestamp_val, function () {
+            execute_query(conn, path, final_file_paths, type, cb, run);
+          });
+        }, run);
+      } else if (typeof(queries[type]) == 'function') {
+        console.info(`${type.toUpperCase()} Function: "${ queries[type].toString() }"`);
+
+        queries[type](conn, function() {
+          updateRecords(conn, type, table, timestamp_val, function () {
+            execute_query(conn, path, final_file_paths, type, cb);
+          });
         });
-      });
-    }
+      }
+    })
 
   } else {
     console.info(colors.blue("No more " + type.toUpperCase() + " migrations to run"));
